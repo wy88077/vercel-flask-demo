@@ -1,21 +1,32 @@
 import requests
-import json
 import re
-from bs4 import BeautifulSoup
 
-def parse_xiaohongshu(url):
-    """小红书去水印解析"""
+def parse_xiaohongshu(share_url):
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+        "Cookie":"web_session=;"
     }
-    
-    if "xiaohongshu.com" not in url and "xhslink.com" not in url:
-        raise Exception("不是有效的小红书链接")
-    
-    # 简易版解析（替换成你的原版代码）
-    return {
-        "title": "小红书测试笔记",
-        "content": "测试内容",
-        "images": ["https://example.com/img1.jpg"],  # 图片列表
-        "video": "https://example.com/xhs_video.mp4"  # 视频链接（无则为""）
-    }
+    try:
+        if not ("xiaohongshu" in share_url or "xhslink" in share_url):
+            raise Exception("非小红书链接")
+        real_url = requests.get(share_url,headers=headers,allow_redirects=True,timeout=10).url
+        note_id = re.search(r'note/(\d+)',real_url)
+        if not note_id:
+            raise Exception("提取笔记ID失败")
+        nid = note_id.group(1)
+        detail_api = f"https://www.xiaohongshu.com/api/sns/web/v1/feed?source=web_note_detail&note_id={nid}"
+        json_res = requests.get(detail_api,headers=headers,timeout=10).json()
+        item = json_res.get("data",{}).get("items",[])
+        if not item:
+            raise Exception("获取作品信息失败")
+        info = item[0]
+        video = info.get("video",{}).get("origin_video_url","")
+        img_list = [i.get("url","") for i in info.get("image_list",[])]
+        return {
+            "title":info.get("title","小红书作品"),
+            "content":info.get("desc",""),
+            "images":img_list,
+            "video":video
+        }
+    except Exception as e:
+        raise Exception(f"小红书解析失败：{str(e)}")
