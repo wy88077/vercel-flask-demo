@@ -1,6 +1,5 @@
 import requests
 import json
-import re
 
 def parse_douyin(url):
     """抖音去水印解析"""
@@ -16,5 +15,5 @@ def parse_douyin(url):
     return {
         "title": "抖音测试视频",
         "cover": "https://example.com/cover.jpg",
-        "no_watermark_url": "https://example.com/douyin_video.mp4"  # 无水印链接
+        "no_watermark_url": "https://example.com/douyin_video.mp4"
     }
