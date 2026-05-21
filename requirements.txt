@@ -1,8 +1,4 @@
-flask==2.3.3
-requests==2.31.0
-cryptography==41.0.7
-beautifulsoup4==4.12.2
-lxml==4.9.3
-json5==0.9.14
-re
+flask
+requests
+json5
 urllib3
